@@ -19,20 +19,19 @@ char PlayerName[100] = "xXPew^3Xx";
 
 void dtaInit() 
 {
+    //constant logic DO NOT CHANGE  
     dtaSend[BIT_LEN]        = 11;      // all data that needs to be sent
     dtaSend[BIT_START_H]    = 179;    // the logic high duration of "Start"
     dtaSend[BIT_START_L]    = 90;     // the logic low duration of "Start"
     dtaSend[BIT_DATA_H]     = 11;     // the logic "long" duration in the communication
     dtaSend[BIT_DATA_L]     = 33;     // the logic "short" duration in the communication
 
-    dtaSend[BIT_DATA_LEN]   = 6;      // Number of data which will sent. If the number is other, you should increase or reduce dtaSend[BIT_DATA+x].
+    //total bit length, can be modified
+    dtaSend[BIT_DATA_LEN]   = 2;      // Number of data which will sent. If the number is other, you should increase or reduce dtaSend[BIT_DATA+x].
 
-    dtaSend[BIT_DATA + 0]     = 0;    // data that will sent
-    dtaSend[BIT_DATA + 1]     = 101;
-    dtaSend[BIT_DATA + 2]     = 192;
-    dtaSend[BIT_DATA + 3]     = 63;
-    dtaSend[BIT_DATA + 4]     = 192;
-    dtaSend[BIT_DATA + 5]     = 63;
+    //bit string data that will be sent
+    dtaSend[BIT_DATA + 0]     = 0;    //Team ID
+    dtaSend[BIT_DATA + 1]     = 1;    //Player ID
 }
 
 void setup()
@@ -41,8 +40,8 @@ void setup()
     Serial.println("init start");
     IR.Init(pinRecv);
     pinMode(buttonPin, INPUT); //initialize the pushbutton as an input
-    Serial.println("init over");
     dtaInit();
+    Serial.println("init over");
 }
 
 unsigned char dta[20];
@@ -66,33 +65,10 @@ void loop()
     if(IR.IsDta())                  // get IR data
     {
         Serial.println("BANG! you got shot");
+        //add LGB LED turns red here
         IR.Recv(dta);               // receive data to dta
 
         Serial.println("+------------------------------------------------------+");
-        Serial.print("LEN = ");
-        Serial.println(dta[BIT_LEN]);
-        Serial.print("START_H: ");
-        Serial.print(dta[BIT_START_H]);
-        Serial.print("\tSTART_L: ");
-        Serial.println(dta[BIT_START_L]);
-
-        Serial.print("DATA_H: ");
-        Serial.print(dta[BIT_DATA_H]);
-        Serial.print("\tDATA_L: ");
-        Serial.println(dta[BIT_DATA_L]);
-
-        Serial.print("\r\nDATA_LEN = ");
-        Serial.println(dta[BIT_DATA_LEN]);
-
-        Serial.print("DATA: ");
-        for(int i=0; i<dta[BIT_DATA_LEN]; i++)
-        {
-            Serial.print("0x");
-            Serial.print(dta[i+BIT_DATA], HEX);
-            Serial.print("\t");
-        }
-        Serial.println();
-
         Serial.print("DATA: ");
         for(int i=0; i<dta[BIT_DATA_LEN]; i++)
         {
@@ -101,5 +77,8 @@ void loop()
         }
         Serial.println();
         Serial.println("+------------------------------------------------------+\r\n\r\n");
+        
+        delay(4000); //nap after being shot, RGB LED will remain red until nap is over
+        //RGB LED is now green again
     }
 }
