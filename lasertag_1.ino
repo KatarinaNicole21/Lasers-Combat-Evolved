@@ -11,6 +11,7 @@
 const int ir_freq = 38;             // 38k
 const int pinRecv = 2;              // ir receiver connect to D2
 const int buttonPin = 4;            //push button connected to D4
+const int ledpin = 8;               //LED connected to D8
 
 int buttonState = 0;
 
@@ -44,14 +45,9 @@ void setup()
     Serial.println("init over");
 }
 
-unsigned char dta[20];
-
-void loop() 
+void fire()
 {
-    buttonState = digitalRead(buttonPin); //read state of pushbutton value
-    if(buttonState == HIGH) //check if the pushbutton is pressed, if it is the state will be HIGH
-    {
-      IR.Send(dtaSend, 38); //send signal when pushbutton is HIGH
+  IR.Send(dtaSend, 38); //send signal when pushbutton is HIGH
       Serial.println("pew");
       Serial.println("Player: ");
       Serial.println(PlayerName);
@@ -60,25 +56,22 @@ void loop()
       
       delay(500);
       IR.Init(pinRecv);
+}
+
+void shot();
+
+unsigned char dta[20];
+
+void loop() 
+{
+    buttonState = digitalRead(buttonPin); //read state of pushbutton value
+    if(buttonState == HIGH) //check if the pushbutton is pressed, if it is the state will be HIGH
+    {
+      fire();
     }
     
     if(IR.IsDta())                  // get IR data
     {
-        Serial.println("BANG! you got shot");
-        //add LGB LED turns red here
-        IR.Recv(dta);               // receive data to dta
-
-        Serial.println("+------------------------------------------------------+");
-        Serial.print("DATA: ");
-        for(int i=0; i<dta[BIT_DATA_LEN]; i++)
-        {
-            Serial.print(dta[i+BIT_DATA], DEC);
-            Serial.print("\t");
-        }
-        Serial.println();
-        Serial.println("+------------------------------------------------------+\r\n\r\n");
-        
-        delay(4000); //nap after being shot, RGB LED will remain red until nap is over
-        //RGB LED is now green again
+        shot();
     }
 }
