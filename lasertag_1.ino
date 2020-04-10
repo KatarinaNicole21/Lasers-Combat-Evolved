@@ -1,4 +1,5 @@
 #include <IRSendRev.h>
+#include <ChainableLED.h>
 
 #define BIT_LEN         0
 #define BIT_START_H     1
@@ -7,11 +8,12 @@
 #define BIT_DATA_L      4
 #define BIT_DATA_LEN    5
 #define BIT_DATA        6
+#define NUM_LEDS        1
 
 const int ir_freq = 38;             // 38k
 const int pinRecv = 2;              // ir receiver connect to D2
 const int buttonPin = 4;            //push button connected to D4
-const int ledpin = 8;               //LED connected to D8
+ChainableLED leds(7,8, NUM_LEDS);   //LED connected to D8
 
 int buttonState = 0;
 
@@ -19,7 +21,7 @@ unsigned char dtaSend[20];
 char PlayerName[100] = "xXPew^3Xx";
 
 void dtaInit() 
-{
+{ 
     //constant logic DO NOT CHANGE  
     dtaSend[BIT_LEN]        = 11;      // all data that needs to be sent
     dtaSend[BIT_START_H]    = 179;    // the logic high duration of "Start"
@@ -42,12 +44,20 @@ void setup()
     IR.Init(pinRecv);
     pinMode(buttonPin, INPUT); //initialize the pushbutton as an input
     dtaInit();
+    leds.init();
     Serial.println("init over");
 }
 
-void fire()
+unsigned char dta[20];
+
+void loop() 
 {
-  IR.Send(dtaSend, 38); //send signal when pushbutton is HIGH
+   leds.setColorRGB(0,0,255,0);
+    buttonState = digitalRead(buttonPin); //read state of pushbutton value
+    if(buttonState == HIGH) //check if the pushbutton is pressed, if it is the state will be HIGH
+    {
+      leds.setColorRGB(0, 100, 75, 0);
+      IR.Send(dtaSend, 38); //send signal when pushbutton is HIGH
       Serial.println("pew");
       Serial.println("Player: ");
       Serial.println(PlayerName);
@@ -56,22 +66,19 @@ void fire()
       
       delay(500);
       IR.Init(pinRecv);
-}
-
-void shot();
-
-unsigned char dta[20];
-
-void loop() 
-{
-    buttonState = digitalRead(buttonPin); //read state of pushbutton value
-    if(buttonState == HIGH) //check if the pushbutton is pressed, if it is the state will be HIGH
-    {
-      fire();
     }
     
     if(IR.IsDta())                  // get IR data
     {
-        shot();
+        leds.setColorRGB(0, 255, 0, 0);
+        Serial.println("BANG! you got shot");
+        IR.Recv(dta);               // receive data to dta
+
+        Serial.println("+------------------------------------------------------+");
+        Serial.print("Player Numer:\n");
+        Serial.println(dta[BIT_DATA + 0]);
+        Serial.println("Player ID:\n");
+        Serial.println("+------------------------------------------------------+\r\n\r\n");
+        delay(5000); //napping function
     }
 }
